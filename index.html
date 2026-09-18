@@ -250,8 +250,8 @@ body:after{width:520px;height:520px;right:-230px;bottom:-180px;background:radial
       <div class="field" style="margin:0"><label style="font-size:11px">Sampai tanggal</label><input id="filterDateTo" type="date" onchange="renderOrders()"></div>
     </div>
     <div class="table-card"><div class="table-scroll">
-      <table><thead><tr><th>No Order</th><th>Outlet</th><th>PIC</th><th>Tanggal Kebutuhan</th><th>Item</th><th>Status</th><th>Aksi</th></tr></thead>
-      <tbody id="orderTable"><tr><td colspan="7">Memuat...</td></tr></tbody></table>
+      <table><thead><tr><th>No Order</th><th>Outlet</th><th>PIC</th><th>Tanggal Kebutuhan</th><th>Input Order</th><th>Item</th><th>Status</th><th>Aksi</th></tr></thead>
+      <tbody id="orderTable"><tr><td colspan="8">Memuat...</td></tr></tbody></table>
     </div></div>
   </div>
 </div>
@@ -477,12 +477,14 @@ $("orderForm").addEventListener("submit",async e=>{
   try{
     // Buat nomor order sebelum addDoc agar order publik tidak perlu update kedua
     const orderNo="ORD-"+new Date().toISOString().slice(0,10).replaceAll("-","")+"-"+Math.random().toString(36).slice(2,8).toUpperCase();
+    const createdAtMs=Date.now();
+    const inputDateTime=new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(new Date(createdAtMs))+" WIB";
     await addDoc(collection(db,"orders"),{
       orderNo, branch, outlet, pic:$("pic").value.trim(),
       needDate:$("needDate").value, items, notes:$("notes").value.trim(),
-      status:"MENUNGGU", createdAt:serverTimestamp(), createdAtMs:Date.now()
+      status:"MENUNGGU", createdAt:serverTimestamp(), createdAtMs
     });
-    const waText=`🍦 ORDER BARANG SOUR SALLY YOGULATO\n\nNo. Order: ${orderNo}\nTanggal Kebutuhan: ${$("needDate").value}\n\n📍 Branch: ${branch}\n🏪 Outlet: ${outlet}\n👤 PIC: ${$("pic").value.trim()}\n\n📦 DETAIL ORDER\n${items.map((x,i)=>`${i+1}. ${displayItem(x)}`).join("\n")}${$("notes").value.trim()?`\n\n📝 Catatan:\n${$("notes").value.trim()}`:""}\n\n🟡 Status: MENUNGGU APPROVAL`;
+    const waText=`🍦 ORDER BARANG SOUR SALLY YOGULATO\n\nNo. Order: ${orderNo}\n🕐 Input Order: ${inputDateTime}\nTanggal Kebutuhan: ${$("needDate").value}\n\n📍 Branch: ${branch}\n🏪 Outlet: ${outlet}\n👤 PIC: ${$("pic").value.trim()}\n\n📦 DETAIL ORDER\n${items.map((x,i)=>`${i+1}. ${displayItem(x)}`).join("\n")}${$("notes").value.trim()?`\n\n📝 Catatan:\n${$("notes").value.trim()}`:""}\n\n🟡 Status: MENUNGGU APPROVAL`;
     ok.innerHTML=`<b>Order berhasil dikirim ✅</b><br>No. Order: <b>${orderNo}</b><br><br><button class="btn btn-green btn-sm" onclick='openWAModal(${JSON.stringify(waText)},"Order ${orderNo}")'>💬 Share ke WhatsApp</button>`;
     ok.classList.remove("hidden");
     $("orderForm").reset();$("needDate").value=new Date().toISOString().slice(0,10);$("items").innerHTML="";addItemRow();
@@ -633,7 +635,7 @@ function subscribeOrders(){
   if(unsubOrders)unsubOrders();
   unsubOrders=onSnapshot(query(collection(db,"orders"),orderBy("createdAtMs","desc")),snap=>{
     orders=snap.docs.map(d=>({id:d.id,...d.data()}));renderOrders();
-  },err=>{$("orderTable").innerHTML=`<tr><td colspan="7">Tidak bisa membaca order: ${esc(err.message)}</td></tr>`});
+  },err=>{$("orderTable").innerHTML=`<tr><td colspan="8">Tidak bisa membaca order: ${esc(err.message)}</td></tr>`});
 }
 window.getFilteredOrders=()=>{
   const q=$("searchOrder").value.toLowerCase(), b=$("filterBranch").value, st=$("filterStatus").value;
@@ -643,15 +645,21 @@ window.getFilteredOrders=()=>{
 window.renderOrders=()=>{
   const list=getFilteredOrders();
   $("sAll").textContent=orders.length;$("sWait").textContent=orders.filter(o=>o.status==="MENUNGGU").length;$("sApproved").textContent=orders.filter(o=>["APPROVED","DIPROSES"].includes(o.status)).length;$("sDone").textContent=orders.filter(o=>o.status==="SELESAI").length;
-  $("orderTable").innerHTML=list.length?list.map(o=>`<tr><td><b>${esc(o.orderNo||o.id.slice(0,8))}</b><div class="mini">${esc(o.branch||"")}</div></td><td>${esc(o.outlet)}</td><td>${esc(o.pic)}</td><td><b>${esc(o.needDate||"-")}</b></td><td><ul class="detail-list">${(o.items||[]).map(x=>`<li>${esc(x.product)} × ${x.qty}</li>`).join("")}</ul></td><td>${badge(o.status)}</td><td><div style="display:flex;gap:5px;flex-wrap:wrap">${o.status==="MENUNGGU"?`<button class="btn btn-green btn-sm" onclick="setStatus('${o.id}','APPROVED')">Approve</button><button class="btn btn-danger btn-sm" onclick="setStatus('${o.id}','DITOLAK')">Reject</button>`:""}${o.status==="APPROVED"?`<button class="btn btn-light btn-sm" onclick="setStatus('${o.id}','DIPROSES')">Proses</button>`:""}${o.status==="DIPROSES"?`<button class="btn btn-green btn-sm" onclick="setStatus('${o.id}','SELESAI')">Selesai</button>`:""}<button class="btn btn-light btn-sm" onclick="editOrderDate('${o.id}')">📅 Tgl</button><button class="btn btn-light btn-sm" onclick="shareOrder('${o.id}')">WA</button><button class="btn btn-light btn-sm" onclick="pdfOrder('${o.id}')">PDF</button>${currentRole==="ADMIN"?`<button class="btn btn-danger btn-sm" onclick="removeOrder('${o.id}')">Hapus</button>`:""}</div></td></tr>`).join(""): `<tr><td colspan="7" style="text-align:center;padding:30px">Tidak ada order sesuai filter.</td></tr>`;
+  $("orderTable").innerHTML=list.length?list.map(o=>`<tr><td><b>${esc(o.orderNo||o.id.slice(0,8))}</b><div class="mini">${esc(o.branch||"")}</div></td><td>${esc(o.outlet)}</td><td>${esc(o.pic)}</td><td><b>${esc(o.needDate||"-")}</b></td><td><b>${esc(formatInputDateTime(o))}</b></td><td><ul class="detail-list">${(o.items||[]).map(x=>`<li>${esc(displayItem(x))}</li>`).join("")}</ul></td><td>${badge(o.status)}</td><td><div style="display:flex;gap:5px;flex-wrap:wrap">${o.status==="MENUNGGU"?`<button class="btn btn-green btn-sm" onclick="setStatus('${o.id}','APPROVED')">Approve</button><button class="btn btn-danger btn-sm" onclick="setStatus('${o.id}','DITOLAK')">Reject</button>`:""}${o.status==="APPROVED"?`<button class="btn btn-light btn-sm" onclick="setStatus('${o.id}','DIPROSES')">Proses</button>`:""}${o.status==="DIPROSES"?`<button class="btn btn-green btn-sm" onclick="setStatus('${o.id}','SELESAI')">Selesai</button>`:""}<button class="btn btn-light btn-sm" onclick="editOrderDate('${o.id}')">📅 Tgl</button><button class="btn btn-light btn-sm" onclick="shareOrder('${o.id}')">WA</button><button class="btn btn-light btn-sm" onclick="pdfOrder('${o.id}')">PDF</button>${currentRole==="ADMIN"?`<button class="btn btn-danger btn-sm" onclick="removeOrder('${o.id}')">Hapus</button>`:""}</div></td></tr>`).join(""): `<tr><td colspan="8" style="text-align:center;padding:30px">Tidak ada order sesuai filter.</td></tr>`;
 };
 window.setStatus=async(id,status)=>{if(!confirm(`Ubah status menjadi ${status}?`))return;await updateDoc(doc(db,"orders",id),{status,updatedAt:serverTimestamp(),updatedBy:currentUser.email})};
 window.removeOrder=async id=>{if(currentRole!=="ADMIN")return;if(confirm("Hapus order ini?"))await deleteDoc(doc(db,"orders",id))};
 window.editOrderDate=async id=>{const o=orders.find(x=>x.id===id);if(!o)return;const next=prompt(`Tanggal kedatangan baru untuk ${o.orderNo}:`,o.needDate||today());if(!next||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(next)||next===o.needDate)return;if(confirm(`Ubah tanggal ${o.needDate||"-"} → ${next}?`))await updateDoc(doc(db,"orders",id),{needDate:next,previousNeedDate:o.needDate||"",dateEditedAt:serverTimestamp(),dateEditedBy:currentUser.email})};
-function orderText(o){return `🍦 ORDER BARANG SOUR SALLY YOGULATO\n\nNo. Order: ${o.orderNo||o.id}\n📅 Tanggal Kedatangan: ${o.needDate||"-"}\n📍 Branch: ${o.branch||"-"}\n🏪 Outlet: ${o.outlet||"-"}\n👤 PIC: ${o.pic||"-"}\n\n📦 DETAIL ORDER\n${(o.items||[]).map((x,i)=>`${i+1}. ${displayItem(x)}`).join("\n")}${o.notes?`\n\n📝 Catatan:\n${o.notes}`:""}\n\nStatus: ${o.status||"MENUNGGU"}`}
+
+function formatInputDateTime(o){
+  const ms=Number(o?.createdAtMs)||0;
+  if(!ms)return "-";
+  return new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(new Date(ms))+" WIB";
+}
+function orderText(o){return `🍦 ORDER BARANG SOUR SALLY YOGULATO\n\nNo. Order: ${o.orderNo||o.id}\n🕐 Input Order: ${formatInputDateTime(o)}\n📅 Tanggal Kedatangan: ${o.needDate||"-"}\n📍 Branch: ${o.branch||"-"}\n🏪 Outlet: ${o.outlet||"-"}\n👤 PIC: ${o.pic||"-"}\n\n📦 DETAIL ORDER\n${(o.items||[]).map((x,i)=>`${i+1}. ${displayItem(x)}`).join("\n")}${o.notes?`\n\n📝 Catatan:\n${o.notes}`:""}\n\nStatus: ${o.status||"MENUNGGU"}`}
 window.shareOrder=id=>{const o=orders.find(x=>x.id===id);if(o)openWAModal(orderText(o),`Order ${o.orderNo||o.id}`)};
 window.shareFilteredOrders=()=>{const list=getFilteredOrders();if(!list.length)return alert("Tidak ada order sesuai filter untuk dibagikan.");openWAModal(`🍦 REKAP ORDER SOUR SALLY YOGULATO\n📅 Periode: ${$("filterDateFrom").value||"Semua"} s/d ${$("filterDateTo").value||"Semua"}\n\n`+list.map(orderText).join("\n\n━━━━━━━━━━━━\n\n"),`Rekap ${list.length} order`)};
-let pdfY=15;function pdfAddOrder(d,o){if(pdfY>265){d.addPage();pdfY=15}d.setFontSize(11);d.setFont(undefined,"bold");d.text(`ORDER ${o.orderNo||o.id}`,14,pdfY);pdfY+=6;d.setFont(undefined,"normal");d.setFontSize(9);const a=[`Tanggal Kedatangan: ${o.needDate||"-"}`,`Branch: ${o.branch||"-"}`,`Outlet: ${o.outlet||"-"}`,`PIC: ${o.pic||"-"}`,`Status: ${o.status||"-"}`];d.text(a,14,pdfY);pdfY+=a.length*5+2;(o.items||[]).forEach((x,i)=>{d.text(`${i+1}. ${displayItem(x)}`,18,pdfY);pdfY+=5});if(o.notes){d.text(`Catatan: ${o.notes}`,18,pdfY,{maxWidth:175});pdfY+=7}pdfY+=4}
+let pdfY=15;function pdfAddOrder(d,o){if(pdfY>265){d.addPage();pdfY=15}d.setFontSize(11);d.setFont(undefined,"bold");d.text(`ORDER ${o.orderNo||o.id}`,14,pdfY);pdfY+=6;d.setFont(undefined,"normal");d.setFontSize(9);const a=[`Input Order: ${formatInputDateTime(o)}`,`Tanggal Kedatangan: ${o.needDate||"-"}`,`Branch: ${o.branch||"-"}`,`Outlet: ${o.outlet||"-"}`,`PIC: ${o.pic||"-"}`,`Status: ${o.status||"-"}`];d.text(a,14,pdfY);pdfY+=a.length*5+2;(o.items||[]).forEach((x,i)=>{d.text(`${i+1}. ${displayItem(x)}`,18,pdfY);pdfY+=5});if(o.notes){d.text(`Catatan: ${o.notes}`,18,pdfY,{maxWidth:175});pdfY+=7}pdfY+=4}
 window.pdfOrder=id=>{const o=orders.find(x=>x.id===id);if(!o)return;const J=window.jspdf;if(!J)return alert("PDF belum termuat. Refresh halaman lalu coba lagi.");const d=new J.jsPDF();pdfY=15;d.setFontSize(16);d.text("Sour Sally Yogulato — Order Barang",14,pdfY);pdfY+=10;pdfAddOrder(d,o);d.save(`${o.orderNo||"Order"}.pdf`)};
 window.pdfFilteredOrders=()=>{const list=getFilteredOrders();if(!list.length)return alert("Tidak ada order sesuai filter untuk PDF.");const J=window.jspdf;if(!J)return alert("PDF belum termuat. Refresh halaman lalu coba lagi.");const d=new J.jsPDF();pdfY=15;d.setFontSize(16);d.text("Sour Sally Yogulato — Rekap Order",14,pdfY);pdfY+=8;d.setFontSize(9);d.text(`Periode: ${$("filterDateFrom").value||"Semua"} s/d ${$("filterDateTo").value||"Semua"}`,14,pdfY);pdfY+=8;list.forEach(o=>pdfAddOrder(d,o));d.save(`Rekap_Order_Sour_Sally_${new Date().toISOString().slice(0,10)}.pdf`)};
 function timeValue(hour,minute){return `${String(hour??0).padStart(2,"0")}:${String(minute??0).padStart(2,"0")}`;}
@@ -762,7 +770,7 @@ window.importOutletsExcel=async input=>{
   }
 };
 
-window.exportExcel=()=>{const list=getFilteredOrders();if(!list.length)return alert("Tidak ada order sesuai filter untuk Excel.");if(!window.XLSX)return alert("Excel library belum termuat. Refresh halaman lalu coba lagi.");const rows=[["No Order","Branch","Outlet","PIC","Tanggal Kedatangan","Status","Produk","Qty","Satuan","Isi Karton","Total PCS","Catatan"]];list.forEach(o=>(o.items||[]).forEach(x=>rows.push([o.orderNo||o.id,o.branch,o.outlet,o.pic,o.needDate,o.status,x.product,x.qty,x.unit||"PCS",x.cartonIsi||"",x.pcsQty||x.qty,o.notes||""])));const wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,"Order");XLSX.writeFile(wb,`Rekap_Order_Sour_Sally_${new Date().toISOString().slice(0,10)}.xlsx`)};
+window.exportExcel=()=>{const list=getFilteredOrders();if(!list.length)return alert("Tidak ada order sesuai filter untuk Excel.");if(!window.XLSX)return alert("Excel library belum termuat. Refresh halaman lalu coba lagi.");const rows=[["No Order","Tanggal Input","Waktu Input","Branch","Outlet","PIC","Tanggal Kedatangan","Status","Produk","Qty","Satuan","Isi Karton","Total PCS","Catatan"]];list.forEach(o=>(o.items||[]).forEach(x=>rows.push([o.orderNo||o.id,formatInputDateTime(o).split(" ").slice(0,1).join(" "),formatInputDateTime(o).split(" ").slice(1).join(" "),o.branch,o.outlet,o.pic,o.needDate,o.status,x.product,x.qty,x.unit||"PCS",x.cartonIsi||"",x.pcsQty||x.qty,o.notes||""])));const wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,"Order");XLSX.writeFile(wb,`Rekap_Order_Sour_Sally_${new Date().toISOString().slice(0,10)}.xlsx`)};
 
 function badge(s){const c={MENUNGGU:"wait",APPROVED:"approved",DIPROSES:"processing",SELESAI:"done",DITOLAK:"rejected"}[s]||"wait";return `<span class="badge ${c}">${esc(s||"MENUNGGU")}</span>`}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
