@@ -71,7 +71,8 @@ textarea{min-height:85px;resize:vertical}
 .notice{padding:10px 12px;border-radius:12px;background:#fff5e8;color:#76522c;font-size:12px;line-height:1.45;margin:10px 0}
 .footer{padding:22px;text-align:center;color:#737b74;font-size:12px}
 .overlay{position:fixed;inset:0;background:rgba(22,29,24,.52);backdrop-filter:blur(7px);z-index:100;display:flex;align-items:center;justify-content:center;padding:18px}
-.modal{width:min(460px,100%);padding:25px;border-radius:24px;background:#fff;box-shadow:0 30px 90px rgba(0,0,0,.22)}
+.modal{width:min(460px,100%);padding:25px;border-radius:24px;background:#fff;box-shadow:0 30px 90px rgba(0,0,0,.22);max-height:calc(100vh - 36px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.overlay{overflow-y:auto;-webkit-overflow-scrolling:touch}
 /* Master Data: tetap nyaman meski branch/outlet sudah banyak */
 #masterOverlay{align-items:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px}
 #masterOverlay .modal{max-height:calc(100vh - 36px);overflow-y:auto;overscroll-behavior:contain}
@@ -88,8 +89,12 @@ textarea{min-height:85px;resize:vertical}
 .admin-head{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:18px}
 .admin-head h1{margin:0;font-size:28px}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:15px}
-.stat{background:#fff;border:1px solid var(--line);border-radius:17px;padding:15px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:17px;padding:15px;border-top:5px solid #d9ddd8}
 .stat b{font-size:25px;display:block}.stat span{color:var(--muted);font-size:12px}
+.stat-all{border-top-color:#8b5cf6;background:linear-gradient(180deg,#fbf8ff 0%,#fff 100%)}.stat-all b{color:#6d3fd0}
+.stat-wait{border-top-color:#f59e0b;background:linear-gradient(180deg,#fffaf0 0%,#fff 100%)}.stat-wait b{color:#b66a00}
+.stat-approved{border-top-color:#3b82f6;background:linear-gradient(180deg,#f3f8ff 0%,#fff 100%)}.stat-approved b{color:#2563b8}
+.stat-done{border-top-color:#22a06b;background:linear-gradient(180deg,#f2fff8 0%,#fff 100%)}.stat-done b{color:#18784f}
 .toolbar{background:#fff;border:1px solid var(--line);border-radius:17px;padding:14px;margin-bottom:15px;display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr 1fr;gap:9px}
 .table-card{background:#fff;border:1px solid var(--line);border-radius:17px;overflow:hidden}
 .table-scroll{overflow:auto}
@@ -135,7 +140,7 @@ body:after{width:520px;height:520px;right:-230px;bottom:-180px;background:radial
 @media(max-width:520px){.login-hero{padding:18px 12px}.login-hero:after{font-size:65px;right:-25px;top:9%}.login-hero .login-card{width:100%;max-width:450px}}
 
 .wa-edit-modal{width:min(760px,calc(100vw - 28px));max-height:90vh;overflow:auto}
-.items-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:4px 0 9px}.items-head>div{min-width:0}.items-head label{display:block;margin:0;font-weight:800}.pill{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:#f4f7e8;color:#63741b;font-size:11px;font-weight:800;white-space:nowrap}.toggle-line{display:flex;align-items:flex-start;gap:10px;padding:12px 13px;margin:4px 0 12px;border:1px solid #ece8df;border-radius:14px;background:#fffdf9;cursor:pointer}.toggle-line input{width:18px;height:18px;margin:1px 0 0;accent-color:#f72585}.toggle-line span{display:flex;flex-direction:column;gap:3px}.toggle-line small{color:var(--muted);line-height:1.45}.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.time-grid .field{margin-bottom:8px}@media(max-width:520px){.items-head{align-items:flex-start}.time-grid{grid-template-columns:1fr 1fr}.item-actions{grid-template-columns:minmax(0,1fr) 132px 42px}}
+.items-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:4px 0 9px}.items-head>div{min-width:0}.items-head label{display:block;margin:0;font-weight:800}.pill{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:#f4f7e8;color:#63741b;font-size:11px;font-weight:800;white-space:nowrap}.toggle-line{display:flex;align-items:flex-start;gap:10px;padding:12px 13px;margin:4px 0 12px;border:1px solid #ece8df;border-radius:14px;background:#fffdf9;cursor:pointer}.toggle-line input{width:18px;height:18px;margin:1px 0 0;accent-color:#f72585}.toggle-line span{display:flex;flex-direction:column;gap:3px}.toggle-line small{color:var(--muted);line-height:1.45}.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.time-grid .field{margin-bottom:8px}@media(max-width:520px){.items-head{align-items:flex-start}.time-grid{grid-template-columns:1fr 1fr}.item-actions{grid-template-columns:minmax(0,1fr) 132px 42px}.modal{max-height:calc(100vh - 20px);padding:18px;border-radius:20px}.modal input,.modal select,.modal textarea{font-size:16px;min-height:46px}.modal .btn{min-height:44px}}
 #waEditText{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff;color:var(--ink);font-size:14px}
 </style>
 </head>
@@ -232,10 +237,10 @@ body:after{width:520px;height:520px;right:-230px;bottom:-180px;background:radial
       </div>
     </div>
     <div class="stats">
-      <div class="stat"><b id="sAll">0</b><span>Total Order</span></div>
-      <div class="stat"><b id="sWait">0</b><span>Menunggu Approval</span></div>
-      <div class="stat"><b id="sApproved">0</b><span>Approved / Diproses</span></div>
-      <div class="stat"><b id="sDone">0</b><span>Selesai</span></div>
+      <div class="stat stat-all"><b id="sAll">0</b><span>Total Order</span></div>
+      <div class="stat stat-wait"><b id="sWait">0</b><span>Menunggu Approval</span></div>
+      <div class="stat stat-approved"><b id="sApproved">0</b><span>Approved / Diproses</span></div>
+      <div class="stat stat-done"><b id="sDone">0</b><span>Selesai</span></div>
     </div>
     <div class="toolbar">
       <input id="searchOrder" placeholder="Cari no order, outlet, PIC..." oninput="renderOrders()">
@@ -282,10 +287,8 @@ body:after{width:520px;height:520px;right:-230px;bottom:-180px;background:radial
     <div id="orderSettingsMsg"></div>
     <label class="toggle-line"><input id="orderHourGateEnabled" type="checkbox"><span><b>Aktifkan pembatasan jam order</b><small>Jika aktif, outlet hanya bisa order di antara jam mulai dan jam tutup.</small></span></label>
     <div class="time-grid">
-      <div class="field"><label>Jam mulai (WIB)</label><input id="orderStartHour" type="number" min="0" max="23" placeholder="08"></div>
-      <div class="field"><label>Menit mulai</label><input id="orderStartMinute" type="number" min="0" max="59" placeholder="00"></div>
-      <div class="field"><label>Jam tutup (WIB)</label><input id="orderCutoffHour" type="number" min="0" max="23" placeholder="15"></div>
-      <div class="field"><label>Menit tutup</label><input id="orderCutoffMinute" type="number" min="0" max="59" placeholder="00"></div>
+      <div class="field"><label>Jam mulai (WIB)</label><input id="orderStartTime" type="time" value="08:00" step="60"></div>
+      <div class="field"><label>Jam tutup (WIB)</label><input id="orderCutoffTime" type="time" value="15:00" step="60"></div>
     </div>
     <div class="notice">Jika pembatasan jam <b>nonaktif</b>, order bisa masuk kapan saja. Jika aktif, sistem otomatis menolak order sebelum jam mulai dan setelah jam tutup.</div>
     <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-light" onclick="hideOrderSettings()">Batal</button><button class="btn btn-green" onclick="saveOrderSettings()">Simpan Pengaturan</button></div>
@@ -302,9 +305,9 @@ body:after{width:520px;height:520px;right:-230px;bottom:-180px;background:radial
         <div class="field"><input id="newProduct" placeholder="Nama varian / barang, contoh: Slay Sally 100ml"></div>
         <div class="field"><label>Ukuran</label><select id="newProductSize" onchange="syncNewProductCarton()"><option value="100">100ml</option><option value="330">330ml</option></select></div>
         <div class="field"><label>Isi per Karton (PCS)</label><input id="newProductCartonQty" type="number" min="1" step="1" value="16" placeholder="Contoh: 16" oninput="this.dataset.userEdited='1'"></div>
-        <label style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px"><input id="newProductCarton" type="checkbox" checked> Aktifkan pilihan Karton</label>
+        <label class="toggle-line" style="margin:8px 0"><input id="newProductActive" type="checkbox" checked><span><b>Produk Aktif</b><small>Jika nonaktif, produk tidak muncul di form pemesanan. Aktif/nonaktif hanya untuk produk, bukan Karton.</small></span></label>
         <button class="btn btn-pink btn-sm" onclick="addProduct()">Tambah Produk</button>
-        <div class="mini" style="margin-top:7px">Default: 100ml = 16 pcs/karton, 330ml = 6 pcs/karton. Isi karton bisa diatur.</div>
+        <div class="mini" style="margin-top:7px">Default: 100ml = 16 pcs/karton, 330ml = 6 pcs/karton. Isi/karton bisa diatur. Pcs selalu tersedia.</div>
         <div id="productList" style="margin-top:12px"></div>
       </div>
       <div>
@@ -405,12 +408,12 @@ function productCartonIsi(p){
   const n=Number(p?.cartonIsi);
   return Number.isFinite(n)&&n>0?n:defaultCartonIsi(productSize(p));
 }
-function productCartonEnabled(p){ return p?.cartonEnabled !== false; }
+function productCartonEnabled(p){ return true; }
 window.syncNewProductCarton=()=>{ const size=Number($("newProductSize")?.value)||100; const input=$("newProductCartonQty"); if(input && !input.dataset.userEdited) input.value=defaultCartonIsi(size); };
 function productByName(name){ return masterProducts.find(p=>p.name===name)||null; }
 function unitOptions(p,selected="PCS"){
   const opts=[`<option value="PCS" ${selected==="PCS"?"selected":""}>Pcs</option>`];
-  if(productCartonEnabled(p)) opts.push(`<option value="KARTON" ${selected==="KARTON"?"selected":""}>Karton (isi ${productCartonIsi(p)})</option>`);
+  if(p) opts.push(`<option value="KARTON" ${selected==="KARTON"?"selected":""}>Karton (isi ${productCartonIsi(p)})</option>`);
   return opts.join("");
 }
 function refreshItemRows(){
@@ -420,7 +423,7 @@ function refreshItemRows(){
     sel.innerHTML='<option value="">Pilih barang</option>'+masterProducts.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}${productCartonEnabled(p)?` • ${productSize(p)}ml`:``}</option>`).join("");
     if(masterProducts.some(p=>p.name===val)) sel.value=val;
     const prod=productByName(sel.value);
-    if(unit){ unit.innerHTML=unitOptions(prod,oldUnit); if(!productCartonEnabled(prod)) unit.value="PCS"; }
+    if(unit){ unit.innerHTML=unitOptions(prod,oldUnit); if(!prod) unit.value="PCS"; }
     updateItemUnitHint(row);
   });
 }
@@ -651,26 +654,30 @@ window.shareFilteredOrders=()=>{const list=getFilteredOrders();if(!list.length)r
 let pdfY=15;function pdfAddOrder(d,o){if(pdfY>265){d.addPage();pdfY=15}d.setFontSize(11);d.setFont(undefined,"bold");d.text(`ORDER ${o.orderNo||o.id}`,14,pdfY);pdfY+=6;d.setFont(undefined,"normal");d.setFontSize(9);const a=[`Tanggal Kedatangan: ${o.needDate||"-"}`,`Branch: ${o.branch||"-"}`,`Outlet: ${o.outlet||"-"}`,`PIC: ${o.pic||"-"}`,`Status: ${o.status||"-"}`];d.text(a,14,pdfY);pdfY+=a.length*5+2;(o.items||[]).forEach((x,i)=>{d.text(`${i+1}. ${displayItem(x)}`,18,pdfY);pdfY+=5});if(o.notes){d.text(`Catatan: ${o.notes}`,18,pdfY,{maxWidth:175});pdfY+=7}pdfY+=4}
 window.pdfOrder=id=>{const o=orders.find(x=>x.id===id);if(!o)return;const J=window.jspdf;if(!J)return alert("PDF belum termuat. Refresh halaman lalu coba lagi.");const d=new J.jsPDF();pdfY=15;d.setFontSize(16);d.text("Sour Sally Yogulato — Order Barang",14,pdfY);pdfY+=10;pdfAddOrder(d,o);d.save(`${o.orderNo||"Order"}.pdf`)};
 window.pdfFilteredOrders=()=>{const list=getFilteredOrders();if(!list.length)return alert("Tidak ada order sesuai filter untuk PDF.");const J=window.jspdf;if(!J)return alert("PDF belum termuat. Refresh halaman lalu coba lagi.");const d=new J.jsPDF();pdfY=15;d.setFontSize(16);d.text("Sour Sally Yogulato — Rekap Order",14,pdfY);pdfY+=8;d.setFontSize(9);d.text(`Periode: ${$("filterDateFrom").value||"Semua"} s/d ${$("filterDateTo").value||"Semua"}`,14,pdfY);pdfY+=8;list.forEach(o=>pdfAddOrder(d,o));d.save(`Rekap_Order_Sour_Sally_${new Date().toISOString().slice(0,10)}.pdf`)};
-window.showOrderSettings=async()=>{if(!["ADMIN","MANAGER"].includes(currentRole))return;const s=await getDoc(doc(db,"settings","order"));const x=s.exists()?s.data():{hourGateEnabled:true,startHour:8,startMinute:0,cutoffHour:15,cutoffMinute:0};$("orderHourGateEnabled").checked=x.hourGateEnabled!==false;$("orderStartHour").value=x.startHour??8;$("orderStartMinute").value=x.startMinute??0;$("orderCutoffHour").value=x.cutoffHour??15;$("orderCutoffMinute").value=x.cutoffMinute??0;$("orderSettingsOverlay").classList.remove("hidden")};window.hideOrderSettings=()=>$("orderSettingsOverlay").classList.add("hidden");
-window.saveOrderSettings=async()=>{const sh=Number($("orderStartHour").value),sm=Number($("orderStartMinute").value),h=Number($("orderCutoffHour").value),m=Number($("orderCutoffMinute").value),hourGateEnabled=$("orderHourGateEnabled").checked;if(![sh,sm,h,m].every(Number.isInteger)||sh<0||sh>23||h<0||h>23||sm<0||sm>59||m<0||m>59)return alert("Jam harus valid: 00–23 dan menit 00–59.");const start=sh*60+sm,cut=h*60+m;if(hourGateEnabled&&start>=cut)return alert("Jam mulai harus lebih awal daripada jam tutup.");await setDoc(doc(db,"settings","order"),{hourGateEnabled,startHour:sh,startMinute:sm,cutoffHour:h,cutoffMinute:m,updatedAt:serverTimestamp(),updatedBy:currentUser.email},{merge:true});orderSettings={...orderSettings,hourGateEnabled,startHour:sh,startMinute:sm,cutoffHour:h,cutoffMinute:m};hideOrderSettings();applyOrderGate();alert("Pengaturan jam order tersimpan.")};
+function timeValue(hour,minute){return `${String(hour??0).padStart(2,"0")}:${String(minute??0).padStart(2,"0")}`;}
+function parseTimeValue(v,fh,fm){const m=String(v||"").match(/^(\d{1,2}):(\d{2})$/);return m?{hour:Number(m[1]),minute:Number(m[2])}:{hour:fh,minute:fm};}
+window.showOrderSettings=async()=>{if(!["ADMIN","MANAGER"].includes(currentRole))return;const s=await getDoc(doc(db,"settings","order"));const x=s.exists()?s.data():{hourGateEnabled:true,startHour:8,startMinute:0,cutoffHour:15,cutoffMinute:0};$("orderHourGateEnabled").checked=x.hourGateEnabled!==false;$("orderStartTime").value=timeValue(x.startHour??8,x.startMinute??0);$("orderCutoffTime").value=timeValue(x.cutoffHour??15,x.cutoffMinute??0);$("orderSettingsOverlay").classList.remove("hidden")};window.hideOrderSettings=()=>$("orderSettingsOverlay").classList.add("hidden");
+window.saveOrderSettings=async()=>{const st=parseTimeValue($("orderStartTime").value,8,0),ct=parseTimeValue($("orderCutoffTime").value,15,0),sh=st.hour,sm=st.minute,h=ct.hour,m=ct.minute,hourGateEnabled=$("orderHourGateEnabled").checked;if(![sh,sm,h,m].every(Number.isInteger)||sh<0||sh>23||h<0||h>23||sm<0||sm>59||m<0||m>59)return alert("Jam harus valid.");const start=sh*60+sm,cut=h*60+m;if(hourGateEnabled&&start>=cut)return alert("Jam mulai harus lebih awal daripada jam tutup.");await setDoc(doc(db,"settings","order"),{hourGateEnabled,startHour:sh,startMinute:sm,cutoffHour:h,cutoffMinute:m,updatedAt:serverTimestamp(),updatedBy:currentUser.email},{merge:true});orderSettings={...orderSettings,hourGateEnabled,startHour:sh,startMinute:sm,cutoffHour:h,cutoffMinute:m};hideOrderSettings();applyOrderGate();alert("Pengaturan jam order tersimpan.")};
 let orderSettings={hourGateEnabled:true,startHour:8,startMinute:0,cutoffHour:15,cutoffMinute:0};
 async function applyOrderGate(){try{const s=await getDoc(doc(db,"settings","order"));if(s.exists())orderSettings={...orderSettings,...s.data()}}catch(e){}const now=new Date(),wib=new Date(now.toLocaleString("en-US",{timeZone:"Asia/Jakarta"})),mins=wib.getHours()*60+wib.getMinutes(),start=Number(orderSettings.startHour??8)*60+Number(orderSettings.startMinute??0),cut=Number(orderSettings.cutoffHour??15)*60+Number(orderSettings.cutoffMinute??0),enabled=orderSettings.hourGateEnabled!==false;let closed=false,msg="";if(enabled&&mins<start){closed=true;msg=`⏰ Order hari ini baru dibuka mulai ${String(orderSettings.startHour??8).padStart(2,"0")}:${String(orderSettings.startMinute??0).padStart(2,"0")} WIB.`}else if(enabled&&mins>=cut){closed=true;msg=`⏰ Order hari ini sudah ditutup sejak ${String(orderSettings.cutoffHour??15).padStart(2,"0")}:${String(orderSettings.cutoffMinute??0).padStart(2,"0")} WIB. Silakan lanjut besok.`}const notice=$("orderClosedNotice"),btn=$("submitOrder");if(notice){notice.textContent=msg;notice.classList.toggle("hidden",!closed)}if(btn)btn.disabled=closed}
 
 window.showMaster=async()=>{$("masterOverlay").classList.remove("hidden");renderMaster()};
 async function renderMaster(){
-  $("productList").innerHTML=masterProducts.map(p=>{
-    const size=productSize(p), isi=productCartonIsi(p), enabled=productCartonEnabled(p);
-    return `<div style="padding:10px 0;border-bottom:1px solid #eee;font-size:13px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><span style="min-width:0"><b>${esc(p.name)}</b><div class='mini'>${size}ml • 1 karton = <b>${isi} pcs</b> • Karton ${enabled?"AKTIF":"NONAKTIF"}</div></span><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end"><button class="btn btn-light btn-sm" onclick="toggleProductCarton('${p.id}',${enabled})">${enabled?"Nonaktifkan Karton":"Aktifkan Karton"}</button><button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Hapus</button></div></div><div style="display:flex;gap:7px;align-items:end;margin-top:8px;flex-wrap:wrap"><div style="width:150px"><label class="mini">Isi/Karton (PCS)</label><input id="cartonQty_${p.id}" type="number" min="1" step="1" value="${isi}" style="width:100%"></div><button class="btn btn-light btn-sm" onclick="saveProductCartonQty('${p.id}')">Simpan Isi Karton</button></div></div>`;
+  const allProductsSnap=await getDocs(collection(db,"products"));
+  const allProducts=allProductsSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+  $("productList").innerHTML=allProducts.map(p=>{
+    const size=productSize(p), isi=productCartonIsi(p), active=p.active!==false;
+    return `<div style="padding:11px 0;border-bottom:1px solid #eee;font-size:13px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><span style="min-width:0"><b>${esc(p.name)}</b><div class='mini'>${size}ml • 1 karton = <b>${isi} pcs</b> • Produk ${active?"AKTIF":"NONAKTIF"}</div></span><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end"><button class="btn ${active?"btn-light":"btn-green"} btn-sm" onclick="toggleProductActive('${p.id}',${active})">${active?"Nonaktifkan Produk":"Aktifkan Produk"}</button><button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Hapus</button></div></div><div style="display:flex;gap:7px;align-items:end;margin-top:8px;flex-wrap:wrap"><div style="width:150px"><label class="mini">Isi/Karton (PCS)</label><input id="cartonQty_${p.id}" type="number" min="1" step="1" value="${isi}" style="width:100%"></div><button class="btn btn-light btn-sm" onclick="saveProductCartonQty('${p.id}')">Simpan Isi Karton</button></div></div>`;
   }).join("")||"<div class='mini'>Belum ada produk.</div>";
   $("outletList").innerHTML=masterOutlets.map(o=>`<div style="padding:8px 0;border-bottom:1px solid #eee;font-size:13px"><b>${esc(o.name)}</b><div class='mini'>${esc(o.branch)}</div><button class="btn btn-danger btn-sm" onclick="deleteOutlet('${o.id}')">Hapus</button></div>`).join("")||"<div class='mini'>Belum ada outlet.</div>";
 }
 window.addProduct=async()=>{
   const name=$("newProduct").value.trim();if(!name)return alert("Nama produk wajib diisi.");
   const size=Number($("newProductSize").value)||100;
-  const cartonEnabled=$("newProductCarton").checked;
+  const active=$("newProductActive").checked;
   const cartonIsi=Math.max(1,Math.floor(Number($("newProductCartonQty").value)||defaultCartonIsi(size)));
-  await addDoc(collection(db,"products"),{name,size,cartonIsi,cartonEnabled,active:true,createdAt:serverTimestamp(),createdBy:currentUser.email});
-  $("newProduct").value="";$("newProductCarton").checked=true;$("newProductCartonQty").dataset.userEdited="";syncNewProductCarton();await loadMaster();renderMaster();
+  await addDoc(collection(db,"products"),{name,size,cartonIsi,active,createdAt:serverTimestamp(),createdBy:currentUser.email});
+  $("newProduct").value="";$("newProductActive").checked=true;$("newProductCartonQty").dataset.userEdited="";syncNewProductCarton();await loadMaster();renderMaster();
 };
 window.saveProductCartonQty=async(id)=>{
   if(currentRole!=="ADMIN"&&currentRole!=="MANAGER")return alert("Hanya Admin/Manager yang boleh mengubah isi Karton.");
@@ -679,10 +686,10 @@ window.saveProductCartonQty=async(id)=>{
   await updateDoc(doc(db,"products",id),{cartonIsi:qty});
   await loadMaster();refreshItemRows();renderMaster();
 };
-window.toggleProductCarton=async(id,current)=>{
-  if(currentRole!=="ADMIN"&&currentRole!=="MANAGER")return alert("Hanya Admin/Manager yang boleh mengubah pengaturan Karton.");
-  await updateDoc(doc(db,"products",id),{cartonEnabled:!current});
-  await loadMaster();renderMaster();
+window.toggleProductActive=async(id,current)=>{
+  if(currentRole!=="ADMIN"&&currentRole!=="MANAGER")return alert("Hanya Admin/Manager yang boleh mengubah status produk.");
+  await updateDoc(doc(db,"products",id),{active:!current});
+  await loadMaster();refreshItemRows();renderMaster();
 };
 window.deleteProduct=async id=>{if(currentRole!=="ADMIN")return alert("Hanya Admin yang boleh menghapus master produk.");if(confirm("Hapus produk?")){await deleteDoc(doc(db,"products",id));await loadMaster();renderMaster()}};
 window.addOutlet=async()=>{
