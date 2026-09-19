@@ -485,7 +485,10 @@ $("orderForm").addEventListener("submit",async e=>{
       status:"MENUNGGU", createdAt:serverTimestamp(), createdAtMs
     });
     const waText=`🍦 ORDER BARANG SOUR SALLY YOGULATO\n\nNo. Order: ${orderNo}\n🕐 Input Order: ${inputDateTime}\nTanggal Kebutuhan: ${$("needDate").value}\n\n📍 Branch: ${branch}\n🏪 Outlet: ${outlet}\n👤 PIC: ${$("pic").value.trim()}\n\n📦 DETAIL ORDER\n${items.map((x,i)=>`${i+1}. ${displayItem(x)}`).join("\n")}${$("notes").value.trim()?`\n\n📝 Catatan:\n${$("notes").value.trim()}`:""}\n\n🟡 Status: MENUNGGU APPROVAL`;
-    ok.innerHTML=`<b>Order berhasil dikirim ✅</b><br>No. Order: <b>${orderNo}</b><br><br><button class="btn btn-green btn-sm" onclick='openWAModal(${JSON.stringify(waText)},"Order ${orderNo}")'>💬 Share ke WhatsApp</button>`;
+    latestOrderWAText=waText;
+    ok.innerHTML=`<b>Order berhasil dikirim ✅</b><br>No. Order: <b>${orderNo}</b><br><br><button type="button" id="shareLatestOrderBtn" class="btn btn-green btn-sm">💬 Share ke WhatsApp</button>`;
+    const shareLatestBtn=$("shareLatestOrderBtn");
+    if(shareLatestBtn) shareLatestBtn.addEventListener("click",()=>openWAModal(latestOrderWAText,`Order ${orderNo}`));
     ok.classList.remove("hidden");
     $("orderForm").reset();$("needDate").value=new Date().toISOString().slice(0,10);$("items").innerHTML="";addItemRow();
   }catch(ex){err.textContent="Gagal mengirim order: "+ex.message;err.classList.remove("hidden")}
@@ -493,6 +496,7 @@ $("orderForm").addEventListener("submit",async e=>{
 });
 window.shareWA=text=>window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank");
 let waOriginalText="";
+let latestOrderWAText="";
 window.openWAModal=(text,title="Pesan WhatsApp")=>{
   waOriginalText=String(text||"");
   $("waEditText").value=waOriginalText;
